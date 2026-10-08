@@ -1,0 +1,6 @@
+node_modules/
+dist/
+dist-tsc/
+.env
+*.local
+.DS_Store

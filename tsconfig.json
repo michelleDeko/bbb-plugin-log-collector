@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist-tsc/",
+        "noImplicitAny": true,
+        "strict": true,
+        "module": "es6",
+        "target": "es2017",
+        "jsx": "react",
+        "allowJs": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "lib": ["ES2021", "DOM", "DOM.Iterable"]
+    },
+    "include": ["src/**/*"],
+    "paths": {
+        "*": ["node_modules"]
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}

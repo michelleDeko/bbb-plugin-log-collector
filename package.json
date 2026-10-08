@@ -1,0 +1,41 @@
+{
+  "name": "bbb-plugin-log-collection",
+  "version": "0.0.5",
+  "private": true,
+  "main": "./src/index.tsx",
+  "dependencies": {
+    "bigbluebutton-html-plugin-sdk": "0.0.99",
+    "fflate": "0.8.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-intl": "^6.8.9"
+  },
+  "scripts": {
+    "build-bundle": "webpack --mode production",
+    "start": "webpack serve --mode development",
+    "typecheck": "tsc --noEmit"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.4",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "copy-webpack-plugin": "^14.0.0",
+    "ts-loader": "^9.4.3",
+    "typescript": "^5.1.6",
+    "webpack": "^5.83.1",
+    "webpack-cli": "^5.1.1",
+    "webpack-dev-server": "^6.0.0"
+  }
+}

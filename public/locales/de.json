@@ -1,0 +1,16 @@
+{
+  "bbbPluginLogCollection.optionsDropdown.label": "Diagnose-Logs herunterladen (ZIP)",
+  "bbbPluginLogCollection.panel.disconnect.title": "Verbindungsproblem erkannt",
+  "bbbPluginLogCollection.panel.disconnect.body": "Die Sitzungs-Logs können unserem Support helfen, die Ursache zu finden. Sie können sie jetzt als ZIP-Datei speichern.",
+  "bbbPluginLogCollection.panel.disconnect.download": "Logdatei erstellen…",
+  "bbbPluginLogCollection.panel.dismiss": "Schließen",
+  "bbbPluginLogCollection.panel.dontShowAgain": "Nicht mehr anzeigen",
+  "bbbPluginLogCollection.consent.title": "Datenschutzhinweis - Diagnose-Logs",
+  "bbbPluginLogCollection.consent.intro": "Die ZIP-Datei wird nur auf Ihrem Gerät erstellt und enthält:",
+  "bbbPluginLogCollection.consent.item1": "Technische Browser-Logs dieser Sitzung",
+  "bbbPluginLogCollection.consent.item2": "Verbindungsereignisse (z. B. Audio-Abbrüche)",
+  "bbbPluginLogCollection.consent.item3": "Browser- und Geräteinformationen, Ihre Nutzer- und Meeting-Kennung",
+  "bbbPluginLogCollection.consent.note": "Zugangsdaten sowie Namen anderer Teilnehmer:innen werden nach Möglichkeit entfernt bzw. pseudonymisiert. Es wird nichts automatisch übertragen - Sie entscheiden, ob Sie die Datei an den Support weitergeben.",
+  "bbbPluginLogCollection.consent.confirm": "Einverstanden & herunterladen",
+  "bbbPluginLogCollection.consent.cancel": "Abbrechen"
+}
