@@ -1,0 +1,16 @@
+{
+  "bbbPluginLogCollection.optionsDropdown.label": "Scarica log di diagnostica (ZIP)",
+  "bbbPluginLogCollection.panel.disconnect.title": "Rilevato problema di connessione",
+  "bbbPluginLogCollection.panel.disconnect.body": "I log di sessione possono aiutare l'assistenza a trovare la causa. Puoi salvarli subito come file ZIP.",
+  "bbbPluginLogCollection.panel.disconnect.download": "Crea file di log…",
+  "bbbPluginLogCollection.panel.dismiss": "Chiudi",
+  "bbbPluginLogCollection.panel.dontShowAgain": "Non mostrare più",
+  "bbbPluginLogCollection.consent.title": "Informativa sulla privacy - log di diagnostica",
+  "bbbPluginLogCollection.consent.intro": "Il file ZIP viene creato esclusivamente sul tuo dispositivo e contiene:",
+  "bbbPluginLogCollection.consent.item1": "Log tecnici del browser di questa sessione",
+  "bbbPluginLogCollection.consent.item2": "Eventi di connessione (es. disconnessioni audio)",
+  "bbbPluginLogCollection.consent.item3": "Informazioni sul browser e sul dispositivo, il tuo ID utente e l'ID della riunione",
+  "bbbPluginLogCollection.consent.note": "I dati di accesso e i nomi degli altri partecipanti vengono rimossi o pseudonimizzati per quanto possibile. Nulla viene trasmesso automaticamente: decidi tu se condividere il file con l'assistenza.",
+  "bbbPluginLogCollection.consent.confirm": "Accetta & scarica",
+  "bbbPluginLogCollection.consent.cancel": "Annulla"
+}
