@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Italian translation, contributed via GitHub.
+
+## [0.1.7] - 2026-10-16
+
+### Fixed
+- Ending a meeting opened the disconnect panel and listed a disconnect in the
+  log summary on BigBlueButton 4.0, both for the moderator who ended it and
+  for all participants. The same happened when a moderator removed a user or
+  when a user joined again in another tab or on another device. Such
+  deliberate session ends no longer count as disconnects; the summary names
+  the session end and lists the connections it closed as expected. The panel
+  now opens 5 seconds after a detected disconnect so the two can be told
+  apart.
+
 ## [0.1.6] - 2026-10-08
 
 ### Changed

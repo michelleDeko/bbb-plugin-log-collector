@@ -85,6 +85,19 @@ function buildSummary(core: CaptureCore): string {
       lines.push(`  [${event.ts}] ${event.category}${event.code ? ` (${event.code})` : ''}: ${event.detail}`);
     });
   }
+
+  const { sessionEnd } = core.detector;
+  if (sessionEnd) {
+    lines.push('');
+    lines.push(`Session ended deliberately at ${sessionEnd.ts}: ${sessionEnd.reason}.`);
+  }
+  const expected = events.filter((event) => event.expected);
+  if (expected.length > 0) {
+    lines.push('Not counted as disconnects (expected with the session end):');
+    expected.forEach((event) => {
+      lines.push(`  [${event.ts}] ${event.category}${event.code ? ` (${event.code})` : ''}: ${event.detail}`);
+    });
+  }
   lines.push('');
   lines.push('Files in this archive:');
   lines.push('  browser-console.log  full captured browser console output');

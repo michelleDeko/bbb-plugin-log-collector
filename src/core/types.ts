@@ -25,6 +25,9 @@ export interface DisconnectEvent {
   alerting: boolean;
   code?: string;
   detail: string;
+  // Set on a would-be alert that came with a deliberate session end (meeting
+  // ended, user removed, ...): why it does not count as a disconnect.
+  expected?: string;
 }
 
 export interface SessionMeta {

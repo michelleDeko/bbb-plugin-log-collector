@@ -27,7 +27,10 @@ diagnose "I was disconnected from audio for no reason" reports.
 - **Disconnect panel:** when a disconnect is detected, a movable panel appears
   below the toast area ("Connection lost") offering the download directly.
   The panel is debounced (max. once per 30 s) and can be disabled via plugin
-  settings.
+  settings. A deliberate end of the session - the meeting is ended, a
+  moderator removes the user, or the user joins again in another tab - is
+  not a disconnect: the panel waits 5 s before it opens, and connections
+  that close because of such a session end are marked as expected instead.
 - **GDPR consent dialog:** every download first shows a privacy notice
   explaining what the archive contains. The ZIP is created entirely
   client-side and is **never transmitted anywhere** - the user decides
@@ -54,7 +57,7 @@ with server logs.
 | File | Content |
 | --- | --- |
 | `browser-console.log` | Full captured console output, one line per entry |
-| `events.ndjson` | Classified connection events (JSON per line, `alerting: true` = disconnect indication) |
+| `events.ndjson` | Classified connection events (JSON per line, `alerting: true` = disconnect indication, `expected` = closed by a deliberate session end) |
 | `session-info.json` | Browser/device info, meeting & user ID, capture window |
 | `summary.txt` | Human-readable summary incl. all detected disconnects |
 

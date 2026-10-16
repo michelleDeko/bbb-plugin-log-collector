@@ -4,6 +4,7 @@ import { installBrowserEventCapture } from './browserEvents';
 import { installConsoleCapture } from './consoleCapture';
 import { DisconnectDetector } from './disconnectDetector';
 import { RingBuffer } from './logBuffer';
+import { installMeetingStatusMonitor } from './meetingStatusMonitor';
 import { installWebRtcMonitor } from './webrtcMonitor';
 import { installWebSocketMonitor } from './websocketMonitor';
 
@@ -40,6 +41,7 @@ export function getCaptureCore(): CaptureCore {
     detector.handleLogEntry(entry);
   });
   installBrowserEventCapture(detector);
+  installMeetingStatusMonitor(detector);
   installWebRtcMonitor(detector);
   installWebSocketMonitor(detector);
 

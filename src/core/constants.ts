@@ -1,5 +1,5 @@
 export const PLUGIN_NAME = 'BbbPluginLogCollection';
-export const PLUGIN_VERSION = '0.1.6';
+export const PLUGIN_VERSION = '0.1.7';
 
 export const DEFAULT_MAX_LOG_ENTRIES = 10000;
 export const MAX_EVENT_ENTRIES = 1000;
@@ -12,17 +12,25 @@ export const ALERT_DEBOUNCE_MS = 30_000;
 // that stays bad keeps producing alerts - stay quiet for this long.
 export const ALERT_SUPPRESS_AFTER_DISMISS_MS = 5 * 60_000;
 
+// An alert is only raised if the session is still running this long after
+// the signal. When a meeting ends or a moderator removes the user, the media
+// and meeting connections are torn down slightly before (or after) the
+// client learns why - an alert inside this window is dropped once the
+// session turns out to have ended deliberately.
+export const ALERT_CONFIRM_DELAY_MS = 5_000;
+
 // The bigbluebutton-html5 client logs through browser-bunyan onto the console,
 // each record carrying a `logCode`. The codes below are taken from the BBB
 // source (connection-manager, audio-manager, SIP.js/SFU/LiveKit bridges) and
 // mark situations where BBB itself noticed a connection problem.
 
 // The whole meeting connection (GraphQL websocket) dropped or errored.
+// (graphql_server_closed_connection is a deliberate session end, see
+// SESSION_END_RULES.)
 export const MEETING_DISCONNECT_CODES: string[] = [
   'connection_terminated',
   'connection_error',
   'graphql_websocket_closed',
-  'graphql_server_closed_connection',
   'graphql_network_error',
 ];
 
@@ -56,9 +64,39 @@ export const AUDIO_DISCONNECT_CODES: string[] = [
   'livekit_primary_fatal_error_disconnect_failed',
 ];
 
-// A room disconnect the user asked for (leaving) is not an incident. BBB
-// logs LiveKit's numeric DisconnectReason, where 1 = CLIENT_INITIATED.
+// BBB logs LiveKit's DisconnectReason as a number ("livekit_primary: room
+// disconnected, reason=N", values from livekit_models.proto). 1 =
+// CLIENT_INITIATED: the client closed the room itself, when leaving or in
+// BBB's own reconnect cycle - not an incident, but not a session end either.
+// 2 and 5 end the session (SESSION_END_RULES); 4 = PARTICIPANT_REMOVED stays
+// alerting, because the server also sends it when it cleans up after a real
+// connection loss - a moderator removing the user is recognized by the
+// meeting status instead (see ALERT_CONFIRM_DELAY_MS).
 export const NORMAL_LEAVE_PATTERN = /reason=(1|CLIENT_INITIATED)\b/i;
+
+// Log lines that show the session ended on purpose: everything that
+// disconnects afterwards is expected and must not alert. The meeting status
+// event of the BBB core (meetingStatusMonitor.ts) covers the remaining cases
+// (meeting ended, user removed, logged out). Matched on every level.
+export interface SessionEndRule {
+  pattern: RegExp;
+  category: 'audio' | 'meeting';
+  reason: string;
+}
+
+export const SESSION_END_RULES: SessionEndRule[] = [
+  // end-meeting-confirmation: this user ended the meeting for everybody.
+  { pattern: /clicked on EndMeeting and confirmed/i, category: 'meeting', reason: 'this user ended the meeting' },
+  // 5 = ROOM_DELETED: bbb-webrtc-sfu deletes the LiveKit room only when the
+  // meeting ends.
+  { pattern: /livekit_primary: room disconnected, reason=(5|ROOM_DELETED)\b/i, category: 'audio', reason: 'the meeting ended (LiveKit room deleted)' }, // livekit_primary_disconnected
+  // 2 = DUPLICATE_IDENTITY: the same user joined again (another tab or
+  // device), which takes the media session over.
+  { pattern: /livekit_primary: room disconnected, reason=(2|DUPLICATE_IDENTITY)\b/i, category: 'audio', reason: 'the user joined again elsewhere' }, // livekit_primary_disconnected
+  // bbb-graphql-middleware sends this over a working connection when it
+  // refuses or replaces the session (e.g. the user joined again).
+  { pattern: /Graphql Server closed the connection/i, category: 'meeting', reason: 'the server ended this session' }, // graphql_server_closed_connection
+];
 
 // Useful timeline context, but not an incident by itself
 // (normal joins/leaves, recoveries, connection-quality ratings).
@@ -115,7 +153,8 @@ export const ALERTING_MESSAGE_PATTERNS: AlertingMessageRule[] = [
   { pattern: /LiveKit: fatal audio publish error/i, category: 'audio' }, // livekit_audio_fatal_publish_error_reconnect
   { pattern: /LiveKit: failed to subscribe to microphone/i, category: 'audio' }, // livekit_audio_subscription_failed
   // LiveKit primary room = the media transport in BBB 4.0. A disconnect with
-  // reason=1/CLIENT_INITIATED is the user leaving, not an incident.
+  // reason=1/CLIENT_INITIATED is the client's own doing, not an incident
+  // (reasons 2 and 5 are caught earlier by SESSION_END_RULES).
   { pattern: /livekit_primary: room disconnected, reason=(?!(1|CLIENT_INITIATED)\b)/i, category: 'audio' }, // livekit_primary_disconnected
   { pattern: /livekit_primary: room error/i, category: 'audio' }, // livekit_primary_error
   { pattern: /livekit_primary: room stalled/i, category: 'audio' }, // livekit_primary_reconnect_stalled
