@@ -1,6 +1,6 @@
 import { strToU8, zipSync } from 'fflate';
-import { PLUGIN_NAME, PLUGIN_VERSION } from '../core/constants';
-import { SessionMeta } from '../core/types';
+import { PLUGIN_NAME, PLUGIN_VERSION, STATS_SAMPLE_INTERVAL_MS } from '../core/constants';
+import { SessionMeta, WebRtcStatsSample } from '../core/types';
 import { CaptureCore } from './capture';
 import { sanitizeUrl } from './redact';
 
@@ -20,6 +20,8 @@ function buildSessionInfo(core: CaptureCore, meta: SessionMeta): string {
       logEntries: core.logs.size,
       droppedLogEntries: core.logs.droppedCount,
       connectionEvents: core.events.size,
+      webrtcStatsSamples: core.stats.samples.size,
+      droppedWebrtcStatsSamples: core.stats.samples.droppedCount,
     },
     meeting: {
       meetingId: meta.meetingId,
@@ -63,6 +65,60 @@ function buildEventsNdjson(core: CaptureCore): string {
   return `${core.events.toArray().map((event) => JSON.stringify(event)).join('\n')}\n`;
 }
 
+function buildStatsNdjson(core: CaptureCore): string {
+  return `${core.stats.samples.toArray().map((sample) => JSON.stringify(sample)).join('\n')}\n`;
+}
+
+function worst(
+  rows: WebRtcStatsSample[],
+  label: string,
+  unit: string,
+  pick: (row: WebRtcStatsSample) => number | undefined,
+): string | undefined {
+  let result: number | undefined;
+  rows.forEach((row) => {
+    const value = pick(row);
+    if (value !== undefined && (result === undefined || value > result)) result = value;
+  });
+  return result === undefined ? undefined : `${label} ${result} ${unit}`;
+}
+
+function buildStatsSummary(core: CaptureCore): string[] {
+  const samples = core.stats.samples.toArray();
+  if (samples.length === 0) {
+    return ['No WebRTC quality samples: no media connection was open, or sampling is switched off.'];
+  }
+
+  const byPeer = new Map<string, WebRtcStatsSample[]>();
+  samples.forEach((sample) => {
+    const rows = byPeer.get(sample.pc) ?? [];
+    rows.push(sample);
+    byPeer.set(sample.pc, rows);
+  });
+
+  const dropped = core.stats.samples.droppedCount;
+  const lines = [
+    `WebRTC connection quality, worst values per connection (sampled every ${STATS_SAMPLE_INTERVAL_MS / 1000} s,`
+      + ` timeline in webrtc-stats.ndjson${dropped > 0 ? ', older samples dropped' : ''}):`,
+  ];
+  byPeer.forEach((rows, peer) => {
+    const paths = Array.from(new Set(rows.map((row) => row.path).filter(Boolean)));
+    const values = [
+      worst(rows, 'RTT', 'ms', (row) => row.rttMs),
+      worst(rows, 'audio loss in', '%', (row) => row.audio?.inLossPct),
+      worst(rows, 'audio loss out', '%', (row) => row.audio?.outLossPct),
+      worst(rows, 'audio jitter', 'ms', (row) => row.audio?.inJitterMs),
+      worst(rows, 'audio concealed', '%', (row) => row.audio?.concealedPct),
+      worst(rows, 'video loss in', '%', (row) => row.video?.inLossPct),
+      worst(rows, 'video loss out', '%', (row) => row.video?.outLossPct),
+    ].filter(Boolean);
+    lines.push(`  ${peer} (${rows[0].ts} .. ${rows[rows.length - 1].ts})`);
+    lines.push(`    path: ${paths.length > 0 ? paths.join(', ') : 'unknown'}`);
+    lines.push(`    ${values.length > 0 ? values.join(', ') : 'no measurements'}`);
+  });
+  return lines;
+}
+
 function buildSummary(core: CaptureCore): string {
   const events = core.events.toArray();
   const alerting = events.filter((event) => event.alerting);
@@ -86,13 +142,17 @@ function buildSummary(core: CaptureCore): string {
     });
   }
   lines.push('');
+  lines.push(...buildStatsSummary(core));
+  lines.push('');
   lines.push('Files in this archive:');
   lines.push('  browser-console.log  full captured browser console output');
   lines.push('  events.ndjson        classified connection/error events, one JSON per line');
+  lines.push('  webrtc-stats.ndjson  connection quality samples, one JSON per line');
   lines.push('  session-info.json    browser, meeting and capture metadata');
   lines.push('');
-  lines.push('Note: secrets are redacted and other participants\' names/ids are');
-  lines.push('pseudonymized on a best-effort basis before anything is stored.');
+  lines.push('Note: secrets are redacted, IP addresses replaced with aliases ([ip-1], ...)');
+  lines.push('and other participants\' names/ids pseudonymized on a best-effort basis');
+  lines.push('before anything is stored.');
   return `${lines.join('\n')}\n`;
 }
 
@@ -101,6 +161,7 @@ export function exportLogsAsZip(core: CaptureCore, meta: SessionMeta): void {
   const zipped = zipSync({
     'browser-console.log': strToU8(buildConsoleLog(core)),
     'events.ndjson': strToU8(buildEventsNdjson(core)),
+    'webrtc-stats.ndjson': strToU8(buildStatsNdjson(core)),
     'session-info.json': strToU8(buildSessionInfo(core, meta)),
     'summary.txt': strToU8(buildSummary(core)),
   }, { level: 6 });

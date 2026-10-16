@@ -1,8 +1,15 @@
 export const PLUGIN_NAME = 'BbbPluginLogCollection';
-export const PLUGIN_VERSION = '0.0.5';
+export const PLUGIN_VERSION = '0.0.6';
 
 export const DEFAULT_MAX_LOG_ENTRIES = 10000;
 export const MAX_EVENT_ENTRIES = 1000;
+
+// WebRTC quality sampling (webrtcStats.ts): one getStats() round over all
+// open peer connections every 5 s. One row per connection and round, so the
+// buffer holds about 7 hours of a single connection, proportionally less
+// with more connections open at the same time.
+export const STATS_SAMPLE_INTERVAL_MS = 5_000;
+export const MAX_STATS_SAMPLES = 5000;
 
 // Minimum time between two disconnect panels, so a flapping connection
 // does not re-open the panel on every retry.

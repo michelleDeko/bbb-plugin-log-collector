@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-10-16
+
+### Added
+- Italian translation, contributed via GitHub.
+- Connection quality timeline: every 5 seconds the plugin records round-trip
+  time, packet loss, jitter, bitrate and the network path (direct, or relayed
+  through a TURN server) of each media connection. The archive contains it as
+  `webrtc-stats.ndjson`, and the summary lists the worst values per
+  connection, so support can see whether the network degraded before a
+  disconnect. It causes no extra network traffic and contacts no other
+  server; the new `collectWebRtcStats` setting switches it off.
+
+### Changed
+- IP addresses in the captured logs are replaced with stable aliases
+  (`[ip-1]`, ...) before they are stored. The privacy notice before the
+  download now mentions IP addresses and the connection quality values.
+
 ## [0.0.5] - 2026-10-08
 
 ### Fixed

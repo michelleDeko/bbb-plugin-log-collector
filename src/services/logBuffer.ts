@@ -28,6 +28,11 @@ export class RingBuffer<T> {
     }
   }
 
+  clear(): void {
+    this.items = [];
+    this.dropped = 0;
+  }
+
   toArray(): T[] {
     return this.items.slice();
   }

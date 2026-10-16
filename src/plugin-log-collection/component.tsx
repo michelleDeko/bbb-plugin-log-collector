@@ -57,7 +57,7 @@ const messages = defineMessages({
   },
   consentItem2: {
     id: 'bbbPluginLogCollection.consent.item2',
-    defaultMessage: 'Connection events (e.g. audio disconnects)',
+    defaultMessage: 'Connection events and quality values (e.g. audio disconnects, packet loss)',
   },
   consentItem3: {
     id: 'bbbPluginLogCollection.consent.item3',
@@ -65,7 +65,7 @@ const messages = defineMessages({
   },
   consentNote: {
     id: 'bbbPluginLogCollection.consent.note',
-    defaultMessage: 'Access data and names of other participants are removed or pseudonymized as far as possible. Nothing is transmitted automatically - you decide whether to share the file with support.',
+    defaultMessage: 'Access data, IP addresses and names of other participants are removed or pseudonymized as far as possible. Nothing is transmitted automatically - you decide whether to share the file with support.',
   },
   consentConfirm: {
     id: 'bbbPluginLogCollection.consent.confirm',
@@ -120,6 +120,12 @@ function PluginLogCollectionContent({ pluginApi }: ContentProps): React.ReactEle
       core.logs.setCapacity(settings.maxLogEntries);
     }
   }, [core, settings.maxLogEntries]);
+
+  // The WebRTC quality sampling runs from bundle load on; switching it off
+  // in the settings also drops what was sampled until the settings arrived.
+  useEffect(() => {
+    core.stats.setEnabled(settings.collectWebRtcStats !== false);
+  }, [core, settings.collectWebRtcStats]);
 
   const sessionMeta = useMemo<SessionMeta>(() => ({
     meetingId: meetingInfo?.data?.meetingId,

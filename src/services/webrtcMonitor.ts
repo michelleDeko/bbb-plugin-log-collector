@@ -1,15 +1,17 @@
 import { DisconnectDetector } from './disconnectDetector';
+import { WebRtcStatsSampler } from './webrtcStats';
 
 /**
  * Observes every RTCPeerConnection the client creates (audio, webcams,
  * screenshare) and records connection/ICE state transitions. An ICE state of
  * "failed" is the most direct low-level evidence that the media transport -
- * i.e. the audio - dropped.
+ * i.e. the audio - dropped. Each connection is also handed to the stats
+ * sampler for the quality timeline.
  *
  * The constructor is wrapped with a Proxy so the class identity, statics and
  * prototype chain stay untouched for the BBB client and its libraries.
  */
-export function installWebRtcMonitor(detector: DisconnectDetector): void {
+export function installWebRtcMonitor(detector: DisconnectDetector, stats: WebRtcStatsSampler): void {
   if (typeof window.RTCPeerConnection !== 'function') return;
 
   const OriginalPeerConnection = window.RTCPeerConnection;
@@ -32,6 +34,7 @@ export function installWebRtcMonitor(detector: DisconnectDetector): void {
           const alerting = pc.iceConnectionState === 'failed';
           detector.record('webrtc', alerting, `${peerId}: iceConnectionState changed to "${pc.iceConnectionState}"`);
         });
+        stats.track(peerId, pc);
       } catch (e) {
         // Monitoring is optional - never interfere with the connection itself.
       }
