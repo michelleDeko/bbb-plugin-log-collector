@@ -6,6 +6,7 @@ import { DisconnectDetector } from './disconnectDetector';
 import { RingBuffer } from './logBuffer';
 import { installMeetingStatusMonitor } from './meetingStatusMonitor';
 import { installWebRtcMonitor } from './webrtcMonitor';
+import { WebRtcStatsSampler } from './webrtcStats';
 import { installWebSocketMonitor } from './websocketMonitor';
 
 export interface CaptureCore {
@@ -13,6 +14,7 @@ export interface CaptureCore {
   logs: RingBuffer<LogEntry>;
   events: RingBuffer<DisconnectEvent>;
   detector: DisconnectDetector;
+  stats: WebRtcStatsSampler;
 }
 
 declare global {
@@ -35,6 +37,7 @@ export function getCaptureCore(): CaptureCore {
   const logs = new RingBuffer<LogEntry>(DEFAULT_MAX_LOG_ENTRIES);
   const events = new RingBuffer<DisconnectEvent>(MAX_EVENT_ENTRIES);
   const detector = new DisconnectDetector(events);
+  const stats = new WebRtcStatsSampler(detector);
 
   installConsoleCapture((entry) => {
     logs.push(entry);
@@ -42,7 +45,7 @@ export function getCaptureCore(): CaptureCore {
   });
   installBrowserEventCapture(detector);
   installMeetingStatusMonitor(detector);
-  installWebRtcMonitor(detector);
+  installWebRtcMonitor(detector, stats);
   installWebSocketMonitor(detector);
 
   const core: CaptureCore = {
@@ -50,6 +53,7 @@ export function getCaptureCore(): CaptureCore {
     logs,
     events,
     detector,
+    stats,
   };
   window.__BBB_LOG_COLLECTION_CORE__ = core;
   return core;

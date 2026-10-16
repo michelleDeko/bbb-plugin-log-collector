@@ -22,6 +22,13 @@ diagnose "I was disconnected from audio for no reason" reports.
   - WebSocket close codes (1006 = abnormal closure)
   - browser `online`/`offline` events and tab visibility changes
   - uncaught JS errors and unhandled promise rejections
+- **Connection quality timeline:** every 5 s the plugin reads the browser's
+  WebRTC statistics of each media connection: round-trip time, packet loss
+  and jitter in both directions, bitrate, concealed (filled-in) audio and the
+  network path (direct, or relayed through a TURN server over UDP/TCP/TLS).
+  This shows whether the network degraded before a disconnect, measured on
+  the media connection itself - no speed test, no extra traffic, no
+  third-party server.
 - **Download anytime:** an entry *"Download diagnostic logs (ZIP)"* in the
   options dropdown (top right, next to "Leave meeting").
 - **Disconnect panel:** when a disconnect is detected, a movable panel appears
@@ -46,6 +53,11 @@ Before anything is stored in the buffer:
   replaced with stable pseudonyms (`[participant-1]`, …); the current user
   becomes `[self]`. Object keys that typically carry personal data
   (`message`, `email`, `extId`, …) are dropped during serialization.
+- IP addresses (ICE candidates, SDP, URLs) are replaced with stable aliases
+  (`[ip-1]`, …), so one address can still be followed through the logs.
+- The quality timeline only takes numbers and candidate types (`host`,
+  `srflx`, `relay`) from the WebRTC statistics - no addresses, ports or
+  track IDs.
 
 This is best-effort: free-text log content cannot be scrubbed with certainty,
 which the consent dialog states. The archive intentionally contains the *own*
@@ -58,8 +70,23 @@ with server logs.
 | --- | --- |
 | `browser-console.log` | Full captured console output, one line per entry |
 | `events.ndjson` | Classified connection events (JSON per line, `alerting: true` = disconnect indication, `expected` = closed by a deliberate session end) |
+| `webrtc-stats.ndjson` | Connection quality every 5 s, one JSON per WebRTC connection and sample (fields below) |
 | `session-info.json` | Browser/device info, meeting & user ID, capture window |
-| `summary.txt` | Human-readable summary incl. all detected disconnects |
+| `summary.txt` | Human-readable summary incl. all detected disconnects and the worst quality values per connection |
+
+Fields in `webrtc-stats.ndjson` (values over the last 5 s interval; a field
+is missing when the browser does not report it):
+
+| Field | Meaning |
+| --- | --- |
+| `pc` | Connection, matches the `pc-N` entries in `events.ndjson` |
+| `state` | `connectionState` of the connection |
+| `path` | Candidate types of the selected ICE pair, e.g. `relay udp (TURN over tls) -> host` |
+| `rttMs` | Round-trip time on the selected ICE pair |
+| `availableOutKbps` | The browser's estimate of the available upload bandwidth; only while the connection sends video (with audio alone the estimate keeps growing up to 1 Gbit/s) |
+| `audio`/`video` `.inKbps`, `.inLossPct`, `.inJitterMs` | Received media |
+| `audio.concealedPct` | Share of the played-out audio the browser had to fill in (audible dropouts); not reported for the first interval of a new stream, which includes its start-up |
+| `audio`/`video` `.outKbps`, `.outLossPct`, `.outJitterMs`, `.outRttMs` | Sent media; loss, jitter and RTT as reported back by the receiving side |
 
 ## Build
 
@@ -98,6 +125,7 @@ public:
       settings:
         maxLogEntries: 10000        # console entries kept in memory
         showDisconnectPanel: true   # auto-panel on detected disconnects
+        collectWebRtcStats: true    # connection quality timeline every 5 s
 ```
 
 ## Development

@@ -8,9 +8,9 @@
   "bbbPluginLogCollection.consent.title": "Informativa sulla privacy - log di diagnostica",
   "bbbPluginLogCollection.consent.intro": "Il file ZIP viene creato esclusivamente sul tuo dispositivo e contiene:",
   "bbbPluginLogCollection.consent.item1": "Log tecnici del browser di questa sessione",
-  "bbbPluginLogCollection.consent.item2": "Eventi di connessione (es. disconnessioni audio)",
+  "bbbPluginLogCollection.consent.item2": "Eventi e valori di qualità della connessione (es. disconnessioni audio, perdita di pacchetti)",
   "bbbPluginLogCollection.consent.item3": "Informazioni sul browser e sul dispositivo, il tuo ID utente e l'ID della riunione",
-  "bbbPluginLogCollection.consent.note": "I dati di accesso e i nomi degli altri partecipanti vengono rimossi o pseudonimizzati per quanto possibile. Nulla viene trasmesso automaticamente: decidi tu se condividere il file con l'assistenza.",
+  "bbbPluginLogCollection.consent.note": "I dati di accesso, gli indirizzi IP e i nomi degli altri partecipanti vengono rimossi o pseudonimizzati per quanto possibile. Nulla viene trasmesso automaticamente: decidi tu se condividere il file con l'assistenza.",
   "bbbPluginLogCollection.consent.confirm": "Accetta & scarica",
   "bbbPluginLogCollection.consent.cancel": "Annulla"
 }

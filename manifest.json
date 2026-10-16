@@ -1,7 +1,7 @@
 {
   "requiredSdkVersion": "^1.0.0-beta.3",
   "name": "BbbPluginLogCollection",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "enabledForBreakoutRooms": true,
   "javascriptEntrypointUrl": "BbbPluginLogCollection.js",
   "localesBaseUrl": "locales",
@@ -16,6 +16,13 @@
     {
       "name": "showDisconnectPanel",
       "label": "Show a panel offering the log download when a disconnect is detected",
+      "required": false,
+      "defaultValue": true,
+      "type": "boolean"
+    },
+    {
+      "name": "collectWebRtcStats",
+      "label": "Record the connection quality (round-trip time, packet loss, jitter) every 5 seconds",
       "required": false,
       "defaultValue": true,
       "type": "boolean"
